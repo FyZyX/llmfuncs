@@ -33,7 +33,7 @@ def _get_param_schema(param_name, param, type_hints, doc_parsed):
     }
 
 
-def _function_to_schema(name, func):
+def from_function(name, func):
     """Converts a function into a schema."""
     doc_parsed = docstring_parser.parse(inspect.getdoc(func))
     signature = inspect.signature(func)
@@ -69,6 +69,6 @@ def from_module(module):
     schemas = []
     for name, obj in inspect.getmembers(module):
         if inspect.isfunction(obj):
-            schema = _function_to_schema(name, obj)
+            schema = from_function(name, obj)
             schemas.append(schema)
     return schemas
