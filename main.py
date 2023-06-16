@@ -26,6 +26,23 @@ def python_type_to_json_schema_type(py_type):
     return mapping.get(py_type, "any")
 
 
+def get_param_schema(param_name, param, type_hints, doc_parsed):
+    """Create a schema for a single parameter."""
+    if param_name not in type_hints:
+        return None
+    param_type = type_hints[param_name]
+    param_type_str = python_type_to_json_schema_type(param_type)
+    descriptions = (p.description for p in doc_parsed.params
+                    if p.arg_name == param_name)
+    param_doc = next(descriptions, '')
+    if param.default is not param.empty:
+        param_doc += f' A sane default value might be {param.default}.'
+    return {
+        "type": param_type_str,
+        "description": param_doc,
+    }
+
+
 def function_to_schema(name, func):
     """Converts a function into a schema."""
     doc_parsed = docstring_parser.parse(inspect.getdoc(func))
@@ -36,20 +53,11 @@ def function_to_schema(name, func):
     required_params = []
 
     for param_name, param in parameters.items():
-        if param_name not in type_hints:
-            continue
-        param_type = type_hints[param_name]
-        param_type_str = python_type_to_json_schema_type(param_type)
-        param_doc = next(
-            (p.description for p in doc_parsed.params if p.arg_name == param_name), '')
-        if param.default is param.empty:
-            required_params.append(param_name)
-        else:
-            param_doc += f' A sane default value might be {param.default}.'
-        params_schema[param_name] = {
-            "type": param_type_str,
-            "description": param_doc,
-        }
+        param_schema = get_param_schema(param_name, param, type_hints, doc_parsed)
+        if param_schema is not None:
+            params_schema[param_name] = param_schema
+            if param.default is param.empty:
+                required_params.append(param_name)
 
     schema = {
         "name": name,
