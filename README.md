@@ -19,10 +19,20 @@ from llmfuncs import schema
 import your_module
 
 schema = schema.from_module(your_module)
-
 ```
 
+> **NOTE:** If your function parameters don't have type hints, they will be ignored!
+
 The returned `schema` will be a list of JSON schema representations of the functions in the given module.
+
+## Creating New Tools
+
+If you have an existing module that you want to work with `llmfuncs`, you can try passing it through an LLM
+to generate the type hints and docstrings for any functions missing them. For example:
+```
+Please update this module to add type hints to all function parameters and Google style docstrings to each function.
+```
+
 
 ## Features
 

@@ -4,6 +4,8 @@ from typing import List, Optional
 
 from llmfuncs.schema import from_module
 
+import example
+
 
 def test_function1(x: int, y: str = "hello") -> str:
     """This is a test function.
@@ -58,6 +60,121 @@ class TestSchemaExtraction(unittest.TestCase):
         self.assertIn("parameters", schema2)
         self.assertIn("a", schema2["parameters"]["properties"])
         self.assertEqual(schema2["parameters"]["properties"]["a"]["type"], "number")
+
+    def test_schema_from_module_example(self):
+        actual_schema = from_module(example)
+        expected_schema = [
+            {
+                "name": "append_file",
+                "description": "Appends content to a file.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "filename": {
+                            "type": "string",
+                            "description": "The name of the file to append to.",
+                        },
+                        "content": {
+                            "type": "string",
+                            "description": "The content to append to the file.",
+                        },
+                    },
+                    "required": ["filename", "content"],
+                },
+            },
+            {
+                "name": "ask_clarification",
+                "description": "Ask the user a clarifying question about the project.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "question": {
+                            "type": "string",
+                            "description": "The question to ask the user.",
+                        },
+                    },
+                    "required": ["question"],
+                },
+            },
+            {
+                "name": "create_dir",
+                "description": "Create a directory with given name.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "directory": {
+                            "type": "string",
+                            "description": "The name of the directory to create.",
+                        },
+                    },
+                    "required": ["directory"],
+                },
+            },
+            {
+                "name": "delete_file",
+                "description": "Deletes a file with given name.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "filename": {
+                            "type": "string",
+                            "description": "The name of the file to delete.",
+                        },
+                    },
+                    "required": ["filename"],
+                },
+            },
+            {
+                "name": "list_files",
+                "description": "List the files in the current project.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {},
+                },
+            },
+            {
+                "name": "project_finished",
+                "description": "Call this function when the project is finished.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {},
+                },
+            },
+            {
+                "name": "read_file",
+                "description": "Read the contents of a file with given name.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "filename": {
+                            "type": "string",
+                            "description": "The name of the file to read from.",
+                        },
+                    },
+                    "required": ["filename"],
+                },
+            },
+            {
+                "name": "write_file",
+                "description": "Writes content to a file with given name. "
+                               "Existing files will be overwritten.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "filename": {
+                            "type": "string",
+                            "description": "The name of the file to write to.",
+                        },
+                        "content": {
+                            "type": "string",
+                            "description": "The content to write to the file.",
+                        },
+                    },
+                    "required": ["filename", "content"],
+                },
+            },
+        ]
+        self.assertListEqual(actual_schema, expected_schema)
 
 
 if __name__ == '__main__':
