@@ -1,5 +1,6 @@
 import inspect
 from typing import get_type_hints
+import docstring_parser
 
 
 def schema_from_module(module):
@@ -14,7 +15,7 @@ def schema_from_module(module):
 
 def function_to_schema(name, func):
     """Converts a function into a schema."""
-    doc = inspect.getdoc(func)
+    doc_parsed = docstring_parser.parse(inspect.getdoc(func))
     signature = inspect.signature(func)
     parameters = signature.parameters
     type_hints = get_type_hints(func)
@@ -27,16 +28,21 @@ def function_to_schema(name, func):
         param_type = type_hints[param_name]
         param_type_str = str(param_type)
         # TODO: convert Python type to JSON Schema type
-        # TODO: parse docstring to get parameter descriptions
+        # Get parameter description from parsed docstring
+        param_doc = next(
+            (p.description for p in doc_parsed.params if p.arg_name == param_name), '')
+        # Add information about default value
+        if param.default is not param.empty:
+            param_doc += f' A sane default value might be {param.default}.'
         param_schema = {
             "type": param_type_str,
-            # "description": TODO,
+            "description": param_doc,
         }
         params_schema[param_name] = param_schema
 
     return {
         "name": name,
-        "description": doc,
+        "description": doc_parsed.short_description,
         "parameters": {
             "type": "object",
             "properties": params_schema,
