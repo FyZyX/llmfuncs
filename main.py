@@ -13,6 +13,20 @@ def schema_from_module(module):
     return schemas
 
 
+def python_type_to_json_schema_type(py_type):
+    mapping = {
+        int: "integer",
+        float: "number",
+        bool: "boolean",
+        str: "string",
+        type(None): "null",
+        list: "array",
+        dict: "object",
+    }
+    return mapping.get(py_type, "any")
+
+
+
 def function_to_schema(name, func):
     """Converts a function into a schema."""
     doc_parsed = docstring_parser.parse(inspect.getdoc(func))
@@ -26,8 +40,7 @@ def function_to_schema(name, func):
             # We could skip parameters without type hints, or treat them as any type
             continue
         param_type = type_hints[param_name]
-        param_type_str = str(param_type)
-        # TODO: convert Python type to JSON Schema type
+        param_type_str = python_type_to_json_schema_type(param_type)
         # Get parameter description from parsed docstring
         param_doc = next(
             (p.description for p in doc_parsed.params if p.arg_name == param_name), '')
