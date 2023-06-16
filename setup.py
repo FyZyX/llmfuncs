@@ -12,6 +12,7 @@ setup(
     description="Dynamically generate JSON Schema from Python code.",
     long_description=long_description,
     long_description_content_type="text/markdown",
+    license="MIT",
     package_dir={'': 'src'},
     packages=find_packages(where='src'),
     install_requires=[
