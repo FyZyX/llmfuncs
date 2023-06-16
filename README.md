@@ -15,10 +15,10 @@ pip install llmfuncs
 Import the main function `schema_from_module` from `llmfuncs` and pass in a module:
 
 ```python
-from llmfuncs import schema_from_module
+from llmfuncs import schema
 import your_module
 
-schema = schema_from_module(your_module)
+schema = schema.from_module(your_module)
 
 ```
 

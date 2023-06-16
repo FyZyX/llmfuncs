@@ -2,7 +2,7 @@ import types
 import unittest
 from typing import List, Optional
 
-from llmfuncs.schema import schema_from_module
+from llmfuncs.schema import from_module
 
 
 def test_function1(x: int, y: str = "hello") -> str:
@@ -39,7 +39,7 @@ dummy_module.test_function2 = test_function2
 
 class TestSchemaExtraction(unittest.TestCase):
     def test_schema_from_module(self):
-        schema = schema_from_module(dummy_module)
+        schema = from_module(dummy_module)
         self.assertEqual(len(schema), 2)
 
         schema_dict = {s["name"]: s for s in schema}

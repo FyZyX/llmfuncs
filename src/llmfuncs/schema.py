@@ -3,17 +3,7 @@ from typing import get_type_hints
 import docstring_parser
 
 
-def schema_from_module(module):
-    """Extracts function information from a Python module and formats it into a schema."""
-    schemas = []
-    for name, obj in inspect.getmembers(module):
-        if inspect.isfunction(obj):
-            schema = function_to_schema(name, obj)
-            schemas.append(schema)
-    return schemas
-
-
-def python_type_to_json_schema_type(py_type):
+def _python_type_to_json_schema_type(py_type):
     mapping = {
         int: "integer",
         float: "number",
@@ -26,12 +16,12 @@ def python_type_to_json_schema_type(py_type):
     return mapping.get(py_type, "any")
 
 
-def get_param_schema(param_name, param, type_hints, doc_parsed):
+def _get_param_schema(param_name, param, type_hints, doc_parsed):
     """Create a schema for a single parameter."""
     if param_name not in type_hints:
         return None
     param_type = type_hints[param_name]
-    param_type_str = python_type_to_json_schema_type(param_type)
+    param_type_str = _python_type_to_json_schema_type(param_type)
     descriptions = (p.description for p in doc_parsed.params
                     if p.arg_name == param_name)
     param_doc = next(descriptions, '')
@@ -43,7 +33,7 @@ def get_param_schema(param_name, param, type_hints, doc_parsed):
     }
 
 
-def function_to_schema(name, func):
+def _function_to_schema(name, func):
     """Converts a function into a schema."""
     doc_parsed = docstring_parser.parse(inspect.getdoc(func))
     signature = inspect.signature(func)
@@ -53,7 +43,7 @@ def function_to_schema(name, func):
     required_params = []
 
     for param_name, param in parameters.items():
-        param_schema = get_param_schema(param_name, param, type_hints, doc_parsed)
+        param_schema = _get_param_schema(param_name, param, type_hints, doc_parsed)
         if param_schema is not None:
             params_schema[param_name] = param_schema
             if param.default is param.empty:
@@ -72,3 +62,13 @@ def function_to_schema(name, func):
         schema["parameters"]["required"] = required_params
 
     return schema
+
+
+def from_module(module):
+    """Extracts function information from a Python module and formats it into a schema."""
+    schemas = []
+    for name, obj in inspect.getmembers(module):
+        if inspect.isfunction(obj):
+            schema = _function_to_schema(name, obj)
+            schemas.append(schema)
+    return schemas
