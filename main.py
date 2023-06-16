@@ -46,11 +46,10 @@ def function_to_schema(name, func):
             required_params.append(param_name)
         else:
             param_doc += f' A sane default value might be {param.default}.'
-        param_schema = {
+        params_schema[param_name] = {
             "type": param_type_str,
             "description": param_doc,
         }
-        params_schema[param_name] = param_schema
 
     schema = {
         "name": name,
