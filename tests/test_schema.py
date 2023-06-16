@@ -2,7 +2,7 @@ import types
 import unittest
 from typing import List, Optional
 
-from main import schema_from_module
+from llmfuncs.schema import schema_from_module
 
 
 def test_function1(x: int, y: str = "hello") -> str:
