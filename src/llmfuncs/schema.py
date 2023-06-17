@@ -38,7 +38,7 @@ def _get_param_schema(param_name, param, type_hints, doc_parsed):
     }
 
 
-def from_function(name, func):
+def from_function(name, func, include_return=False):
     """Converts a function into a schema."""
     doc_parsed = docstring_parser.parse(inspect.getdoc(func))
     signature = inspect.signature(func)
@@ -60,11 +60,14 @@ def from_function(name, func):
         "parameters": {
             "type": "object",
             "properties": params_schema,
-        }
+        },
     }
 
     if required_params:
         schema["parameters"]["required"] = required_params
+
+    if include_return and signature.return_annotation is not signature.empty:
+        schema["return"] = _python_type_to_json_schema_type(signature.return_annotation)
 
     return schema
 
