@@ -1,5 +1,5 @@
 import inspect
-from typing import get_type_hints
+from typing import get_type_hints, Optional
 import docstring_parser
 
 
@@ -13,7 +13,12 @@ def _python_type_to_json_schema_type(py_type):
         list: "array",
         dict: "object",
     }
-    return mapping.get(py_type, "any")
+    if py_type in mapping:
+        return mapping[py_type]
+    elif isinstance(py_type, type(Optional)):
+        return _python_type_to_json_schema_type(py_type.__args__[0])
+    else:
+        raise ValueError(f"Cannot convert `{py_type}` to a JSON schema type")
 
 
 def _get_param_schema(param_name, param, type_hints, doc_parsed):
