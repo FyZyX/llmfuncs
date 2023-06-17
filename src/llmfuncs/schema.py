@@ -75,8 +75,7 @@ def from_function(name, func, include_return=False):
 def from_module(module):
     """Extracts function information from a Python module and formats it into a schema."""
     schemas = []
-    for name, obj in inspect.getmembers(module):
-        if inspect.isfunction(obj):
-            schema = from_function(name, obj)
-            schemas.append(schema)
+    for name, func in inspect.getmembers(module, inspect.isfunction):
+        schema = from_function(name, func)
+        schemas.append(schema)
     return schemas
