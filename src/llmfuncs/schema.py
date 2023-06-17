@@ -1,5 +1,6 @@
 import inspect
-from typing import get_type_hints, Optional
+import typing
+
 import docstring_parser
 
 
@@ -10,15 +11,36 @@ def _python_type_to_json_schema_type(py_type):
         bool: "boolean",
         str: "string",
         type(None): "null",
-        list: "array",
-        dict: "object",
     }
+
+    # Check if type is a basic type
     if py_type in mapping:
         return mapping[py_type]
-    elif isinstance(py_type, type(Optional)):
-        return _python_type_to_json_schema_type(py_type.__args__[0])
-    else:
-        raise ValueError(f"Cannot convert `{py_type}` to a JSON schema type")
+
+    origin = typing.get_origin(py_type)
+    args = typing.get_args(py_type)
+
+    if origin is typing.Union:
+        # this is a special case to handle Optional[type] which is just syntactic sugar
+        # around Union[type, None]
+        if len(args) == 2 and type(None) in args:
+            # Assuming the None is always last
+            return _python_type_to_json_schema_type(args[0])
+        else:
+            return [_python_type_to_json_schema_type(arg) for arg in args]
+
+    if origin is list or origin is typing.List:
+        # For simplicity, we're assuming all elements in the list are of the same type
+        return {"type": "array", "items": _python_type_to_json_schema_type(args[0])}
+
+    if origin is dict or origin is typing.Dict:
+        # For simplicity, we're assuming all keys are strings
+        # and all values are of the same type
+        additional_properties = _python_type_to_json_schema_type(args[1])
+        return {"type": "object", "additionalProperties": additional_properties}
+
+    # The type is not supported
+    raise ValueError(f"Cannot convert {py_type} to a JSON schema type")
 
 
 def _get_param_schema(param_name, param, type_hints, doc_parsed):
@@ -43,7 +65,7 @@ def from_function(name, func, include_return=False):
     doc_parsed = docstring_parser.parse(inspect.getdoc(func))
     signature = inspect.signature(func)
     parameters = signature.parameters
-    type_hints = get_type_hints(func)
+    type_hints = typing.get_type_hints(func)
     params_schema = {}
     required_params = []
 
