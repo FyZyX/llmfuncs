@@ -103,10 +103,10 @@ def from_function(name, func, include_return=False):
     return schema
 
 
-def from_module(module):
+def from_module(module, include_return=False):
     """Extracts function information from a Python module and formats it into a schema."""
     schemas = []
     for name, func in inspect.getmembers(module, inspect.isfunction):
-        schema = from_function(name, func)
+        schema = from_function(name, func, include_return=include_return)
         schemas.append(schema)
     return schemas
