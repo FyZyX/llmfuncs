@@ -107,7 +107,7 @@ class ToolCollection:
         if isinstance(package, str):
             package = importlib.import_module(package)
         for _, module_name, _ in pkgutil.walk_packages(package.__path__):
-            module_path = f'{package.__name__}.{module_name}'
+            module_path = f"{package.__name__}.{module_name}"
             self.add_tools_from_module(module_path, include_return=include_return)
 
     def add_tools_from_glob(self, pattern: str):
@@ -128,7 +128,7 @@ class ToolCollection:
         if not tool:
             raise ValueError(f"No tool found with name: {tool_name}")
 
-        params_schema = tool.schema()['parameters']
+        params_schema = tool.schema()["parameters"]
         is_string = isinstance(json_args, str)
         args = validator.parse_json(json_args) if is_string else json_args
         validator.validate_args_with_schema(args, params_schema)
