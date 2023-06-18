@@ -1,29 +1,78 @@
 # llmfuncs
 
-`llmfuncs` is a Python package that programmatically extracts function definitions and converts them to a JSON schema format that can be used with OpenAI's language models.
+`llmfuncs` is a Python package for documenting, managing, and validating Python functions based on their signature and docstrings. It automatically generates JSON Schema for functions, and provides a way to validate function arguments against the schema.
+
+## Features
+
+- Automatic generation of JSON Schema from Python function signature and docstrings.
+- Support for Python built-in types and many typing module types.
+- Use and validate functions with JSON arguments against their schema.
+- Management of multiple functions through a ToolCollection object.
+- Bulk addition of functions from a module, a package, or a glob pattern.
+- Simple and intuitive API.
 
 ## Installation
 
-You can install the package via pip:
+Install `llmfuncs` using pip:
 
-```bash
+```shell
 pip install llmfuncs
 ```
 
 ## Usage
 
-Import the main function `schema_from_module` from `llmfuncs` and pass in a module:
+### Tool
+
+The `Tool` class encapsulates a function and its associated schema.
 
 ```python
-from llmfuncs import schema
-import your_module
+from llmfuncs.tool import Tool
 
-schema = schema.from_module(your_module)
+def greet(name: str) -> str:
+    """Greet someone.
+
+    Args:
+        name: Name of the person to greet.
+
+    Returns:
+        A greeting message.
+    """
+    return f"Hello, {name}!"
+
+tool = Tool(greet)
+print(tool.name())  # "greet"
+print(tool.schema())
 ```
 
-> **NOTE:** If your function parameters don't have type hints, they will be ignored!
+### ToolCollection
 
-The returned `schema` will be a list of JSON schema representations of the functions in the given module.
+The `ToolCollection` class is a container for multiple `Tool` objects. It provides methods to add tools and use them.
+
+```python
+from llmfuncs.tool import Tool, ToolCollection
+
+tool_collection = ToolCollection()
+tool_collection.add_tool(tool)
+print(len(tool_collection))  # 1
+```
+
+You can also add tools in bulk from a module, a package, or a glob pattern.
+
+```python
+tool_collection.add_tools_from_module('some_module')
+tool_collection.add_tools_from_package('some_package')
+tool_collection.add_tools_from_glob('*.py')
+```
+
+And here's how to use a tool:
+
+```python
+json_args = '{"name": "World"}'
+result = tool_collection.use_tool("greet", json_args)
+print(result)  # "Hello, World!"
+```
+
+For more detailed usage and examples, please check the API documentation and the example scripts in the `examples` folder.
 
 ## Creating New Tools
 
@@ -33,32 +82,10 @@ to generate the type hints and docstrings for any functions missing them. For ex
 Please update this module to add type hints to all function parameters and Google style docstrings to each function.
 ```
 
-## Features
+## Contribute
 
-- Extracts function name, description (from docstring), parameters, and their types
-- Includes default values for parameters in the description
-- Supports functions with arguments that have type hints
-- Converts Python types to corresponding JSON schema types
-
-## Validating Arguments and Calling Functions
-
-```python
-from llmfuncs import schema, validator
-
-
-def my_function(x: int, y: int) -> int:
-    return x + y
-
-
-schema = schema.from_function(my_function)
-args = {"x": 10, "y": 20}
-result = validator.validate_and_call(schema, my_function, args)
-```
-
-## Contributing
-
-To contribute to `llmfuncs`, fork the repository and submit a Pull Request!
+We welcome contributions to `llmfuncs`! Please check out our [CONTRIBUTING.md](https://chat.openai.com/c/CONTRIBUTING.md) for guidelines on how to proceed.
 
 ## License
 
-MIT
+This project is licensed under the terms of the MIT license. For more details, see the [LICENSE](https://chat.openai.com/c/LICENSE) file.
