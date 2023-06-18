@@ -1,5 +1,7 @@
-import openai
 import json
+
+import openai
+
 from llmfuncs import schema, validator
 
 
