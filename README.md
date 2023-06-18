@@ -84,8 +84,8 @@ Please update this module to add type hints to all function parameters and Googl
 
 ## Contribute
 
-We welcome contributions to `llmfuncs`! Please check out our [CONTRIBUTING.md](https://chat.openai.com/c/CONTRIBUTING.md) for guidelines on how to proceed.
+We welcome contributions to `llmfuncs`!
 
 ## License
 
-This project is licensed under the terms of the MIT license. For more details, see the [LICENSE](https://chat.openai.com/c/LICENSE) file.
+This project is licensed under the terms of the MIT license. For more details, see the [LICENSE](LICENSE) file.
