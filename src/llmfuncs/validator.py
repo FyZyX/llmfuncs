@@ -17,9 +17,3 @@ def validate_args_with_schema(args, schema):
         return True
     except jsonschema.ValidationError as e:
         raise ValueError(f"Failed to validate JSON: {e}")
-
-
-def validate_and_call(func: typing.Callable, args_json: str, schema):
-    args = parse_json(args_json)
-    validate_args_with_schema(args, schema)
-    return func(**args)
