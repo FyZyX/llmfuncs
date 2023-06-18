@@ -132,14 +132,12 @@ def from_module(module: str | types.ModuleType, include_return=False):
     return schemas
 
 
-def from_package(package, include_return=False):
+def from_package(package: str | types.ModuleType, include_return=False):
     """Extracts function information from all modules in a Python package and formats it into schemas."""
     schemas = []
     if isinstance(package, str):
         package = importlib.import_module(package)
     for importer, module_name, _ in pkgutil.walk_packages(package.__path__):
         module_path = f'{package.__name__}.{module_name}'
-        spec = importlib.util.spec_from_file_location(module_path, importer.path)
-        module = importlib.util.module_from_spec(spec)
-        schemas.append(from_module(module, include_return))
+        schemas.append(from_module(module_path, include_return))
     return schemas
