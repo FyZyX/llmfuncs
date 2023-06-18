@@ -27,6 +27,12 @@ def json_schema_type(py_type: typing.Any) -> JsonSchema:
     if py_type in mapping:
         return mapping[py_type]
 
+    # For unparameterized list and dict types
+    if py_type is list:
+        return {"type": "array", "items": {}}
+    if py_type is dict:
+        return {"type": "object", "additionalProperties": {}}
+
     origin = typing.get_origin(py_type)
     args = typing.get_args(py_type)
 
@@ -39,18 +45,10 @@ def json_schema_type(py_type: typing.Any) -> JsonSchema:
         else:
             return [json_schema_type(arg) for arg in args]
 
-    if origin is tuple or origin is typing.Tuple:
-        return {"type": "array",
-                "items": [json_schema_type(arg) for arg in args]}
-
     if origin is list or origin is typing.List:
         # For simplicity, we're assuming all elements in the list are of the same type
         return {"type": "array",
                 "items": {"type": json_schema_type(args[0])}, }
-
-    if origin is set or origin is typing.Set:
-        return {"type": "array", "uniqueItems": True,
-                "items": {"type": json_schema_type(args[0])}}
 
     if origin is dict or origin is typing.Dict:
         # For simplicity, we're assuming all keys are strings

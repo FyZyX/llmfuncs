@@ -33,6 +33,43 @@ def test_function2(a: float, b: Optional[List[int]] = None) -> List[int]:
     return [int(a)] * (len(b) if b else 1)
 
 
+def test_function3(a: dict) -> dict:
+    """This is a test function.
+
+    Args:
+        a (dict): A dictionary.
+
+    Returns:
+        dict: A dictionary.
+    """
+    return {"data": a}
+
+
+def test_function4(a: List[dict]) -> List[dict]:
+    """This is a test function.
+
+    Args:
+        a (List[dict]): A list of dictionaries.
+
+    Returns:
+        List[dict]: A list of dictionaries.
+    """
+    return a
+
+
+def test_function5(a: dict, b: List[dict]) -> dict:
+    """This is a test function.
+
+    Args:
+        a (dict): A dictionary.
+        b (List[dict]): A list of dictionaries.
+
+    Returns:
+        dict: A dictionary containing the input dictionary and list.
+    """
+    return {"input_dict": a, "input_list": b}
+
+
 class TestTool(unittest.TestCase):
 
     def test_init_with_unsupported_parameter_type(self):
@@ -93,7 +130,7 @@ class TestToolCollection(unittest.TestCase):
         with self.assertRaises(ValueError):
             tool_collection.use_tool("func", '{"x": "hello"}')
 
-    def test_use_tool2(self):
+    def test_use_tool_with_list(self):
         collection = ToolCollection()
         collection.add_tool(Tool(test_function2))
         result = collection.use_tool("test_function2", {"a": 3.6, "b": [1, 2, 3]})
@@ -103,6 +140,29 @@ class TestToolCollection(unittest.TestCase):
         collection = ToolCollection()
         with self.assertRaises(ValueError):
             collection.use_tool("test_function3", {"a": 3.6, "b": [1, 2, 3]})
+
+    def test_use_tool_with_dict(self):
+        collection = ToolCollection()
+        collection.add_tool(Tool(test_function3))
+        result = collection.use_tool("test_function3", {"a": {"key": "value"}})
+        self.assertEqual(result, {"data": {"key": "value"}})
+
+    def test_use_tool_with_list_of_dicts(self):
+        collection = ToolCollection()
+        collection.add_tool(Tool(test_function4))
+        result = collection.use_tool("test_function4",
+                                     {"a": [{"key1": "value1"}, {"key2": "value2"}]})
+        self.assertEqual(result, [{"key1": "value1"}, {"key2": "value2"}])
+
+    def test_use_tool_with_dict_and_list_of_dicts(self):
+        collection = ToolCollection()
+        collection.add_tool(Tool(test_function5))
+        args = {"a": {"key": "value"}, "b": [{"key1": "value1"}, {"key2": "value2"}]}
+        result = collection.use_tool("test_function5", args)
+        expected = {"input_dict": {"key": "value"},
+                    "input_list": [{"key1": "value1"},
+                                   {"key2": "value2"}]}
+        self.assertEqual(result, expected)
 
 
 class TestToolCollectionFromModule(unittest.TestCase):
