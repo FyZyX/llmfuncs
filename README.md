@@ -33,13 +33,24 @@ to generate the type hints and docstrings for any functions missing them. For ex
 Please update this module to add type hints to all function parameters and Google style docstrings to each function.
 ```
 
-
 ## Features
 
 - Extracts function name, description (from docstring), parameters, and their types
 - Includes default values for parameters in the description
 - Supports functions with arguments that have type hints
 - Converts Python types to corresponding JSON schema types
+
+## Validating Arguments and Calling Functions
+```python
+from llmfuncs import schema, validator
+
+def my_function(x: int, y: int):
+    pass
+
+schema = schema.from_function('my_function', my_function)
+args = {"x": 10, "y": 20}
+result = validator.call_function_with_validation(schema, my_function, args)
+```
 
 ## Contributing
 

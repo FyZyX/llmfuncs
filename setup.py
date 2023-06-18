@@ -17,5 +17,6 @@ setup(
     packages=find_packages(where='src'),
     install_requires=[
         "docstring-parser~=0.15",
+        "jsonschema~=4.17.3",
     ],
 )
