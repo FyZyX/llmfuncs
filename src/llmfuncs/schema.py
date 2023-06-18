@@ -1,7 +1,8 @@
 import importlib
-import inspect
 import importlib.util
+import inspect
 import pkgutil
+import types
 import typing
 
 import docstring_parser
@@ -106,16 +107,32 @@ def from_function(name, func, include_return=False):
     return schema
 
 
-def from_module(module, include_return=False):
-    """Extracts function information from a Python module and formats it into a schema."""
+def from_module(module: str | types.ModuleType, include_return=False):
+    """
+    Extracts function information from a Python module and formats it into a schema.
+    The function can accept either a module object or a string.
+    If a string is passed, it is considered a path and the function will attempt to
+    create a module object without executing the module's code.
+    """
     schemas = []
+
+    # If a string is passed in, create a module object without executing the code
+    if isinstance(module, str):
+        spec = importlib.util.spec_from_file_location(module, module)
+        module = importlib.util.module_from_spec(spec)
+
+    # Check if the module is a proper module
+    if not isinstance(module, types.ModuleType):
+        raise ValueError("Argument must be a module or the path to a module")
+
     for name, func in inspect.getmembers(module, inspect.isfunction):
         schema = from_function(name, func, include_return=include_return)
         schemas.append(schema)
+
     return schemas
 
 
-def from_package(package):
+def from_package(package, include_return=False):
     """Extracts function information from all modules in a Python package and formats it into schemas."""
     schemas = []
     if isinstance(package, str):
@@ -124,5 +141,5 @@ def from_package(package):
         module_path = f'{package.__name__}.{module_name}'
         spec = importlib.util.spec_from_file_location(module_path, importer.path)
         module = importlib.util.module_from_spec(spec)
-        schemas.append(from_module(module))
+        schemas.append(from_module(module, include_return))
     return schemas
