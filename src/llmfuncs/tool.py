@@ -126,7 +126,7 @@ class ToolCollection:
             schemas.extend(module_schemas)
         return schemas
 
-    def call_tool(self, tool_name, json_args):
+    def use_tool(self, tool_name, json_args):
         tool = self._tools.get(tool_name)
         if not tool:
             raise ValueError(f"No tool found with name: {tool_name}")
