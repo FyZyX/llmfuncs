@@ -55,12 +55,16 @@ def _get_param_schema(param_name, param, type_hints, doc_parsed):
     if param_doc is None:
         raise ValueError(
             f"Missing description for parameter '{param_name}' in docstring")
-    if param.default is not param.empty:
-        param_doc += f' A sane default value might be {param.default}.'
-    return {
+
+    param_schema = {
         "type": param_type_str,
         "description": param_doc,
     }
+
+    if param.default is not param.empty:
+        param_schema["default"] = param.default
+
+    return param_schema
 
 
 def from_function(name, func, include_return=False):
