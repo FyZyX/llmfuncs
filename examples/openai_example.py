@@ -18,15 +18,15 @@ def get_current_weather(location, unit="fahrenheit"):
 
 
 # Generate the schema for your function
-schema = schema.from_function(get_current_weather)
+function_schema = schema.from_function(get_current_weather)
 
 
-def run_conversation():
+def run_conversation(model="gpt-3.5-turbo-0613"):
     # Step 1: send the conversation and available functions to GPT
     messages = [{"role": "user", "content": "What's the weather like in Boston?"}]
-    functions = [schema]  # Use the schema generated from your function
+    functions = [function_schema]  # Use the schema generated from your function
     response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-0613",
+        model=model,
         messages=messages,
         functions=functions,
         function_call="auto",  # auto is default, but we'll be explicit
@@ -36,21 +36,19 @@ def run_conversation():
     # Step 2: check if GPT wanted to call a function
     if response_message.get("function_call"):
         # Step 3: call the function
-        # Note: the JSON response may not always be valid; be sure to handle errors
         function_name = response_message["function_call"]["name"]
         function_args_json = response_message["function_call"]["arguments"]
 
         if function_name == "get_current_weather":
-            # Call the function with the validated arguments
+            # validate the arguments against the schema and call the function
             function_response = validator.validate_and_call(
                 func=get_current_weather,
                 args_json=function_args_json,
-                schema=schema["parameters"],
+                schema=function_schema["parameters"],
             )
 
             # Step 4: send the info on the function call and function response to GPT
-            messages.append(
-                response_message)  # extend conversation with assistant's reply
+            messages.append(response_message)  # extend conversation with assistant's reply
             messages.append(
                 {
                     "role": "function",
@@ -59,7 +57,7 @@ def run_conversation():
                 }
             )  # extend conversation with function response
             second_response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo-0613",
+                model=model,
                 messages=messages,
             )  # get a new response from GPT where it can see the function response
             return second_response
