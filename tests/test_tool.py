@@ -93,6 +93,17 @@ class TestToolCollection(unittest.TestCase):
         with self.assertRaises(ValueError):
             tool_collection.use_tool("func", '{"x": "hello"}')
 
+    def test_use_tool2(self):
+        collection = ToolCollection()
+        collection.add_tool(Tool(test_function2))
+        result = collection.use_tool("test_function2", {"a": 3.6, "b": [1, 2, 3]})
+        self.assertEqual(result, [3, 3, 3])
+
+    def test_use_tool_non_existent(self):
+        collection = ToolCollection()
+        with self.assertRaises(ValueError):
+            collection.use_tool("test_function3", {"a": 3.6, "b": [1, 2, 3]})
+
 
 class TestToolCollectionFromModule(unittest.TestCase):
 

@@ -45,11 +45,12 @@ def json_schema_type(py_type: typing.Any) -> JsonSchema:
 
     if origin is list or origin is typing.List:
         # For simplicity, we're assuming all elements in the list are of the same type
-        return {"type": "array", "items": json_schema_type(args[0])}
+        return {"type": "array",
+                "items": {"type": json_schema_type(args[0])}, }
 
     if origin is set or origin is typing.Set:
         return {"type": "array", "uniqueItems": True,
-                "items": json_schema_type(args[0])}
+                "items": {"type": json_schema_type(args[0])}}
 
     if origin is dict or origin is typing.Dict:
         # For simplicity, we're assuming all keys are strings
@@ -79,10 +80,13 @@ def get_param_schema(
         raise ValueError(
             f"Missing description for parameter '{param_name}' in docstring")
 
-    param_schema = {
-        "type": param_type_str,
-        "description": param_doc,
-    }
+    # Check if the param_type_str is already a dictionary.
+    if isinstance(param_type_str, dict):
+        param_schema = param_type_str
+    else:
+        param_schema = {"type": param_type_str}
+
+    param_schema["description"] = param_doc
 
     if param.default is not param.empty:
         param_schema["default"] = param.default
