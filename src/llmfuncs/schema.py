@@ -81,11 +81,12 @@ def _get_param_schema(param_name, param, type_hints, doc_parsed):
     return param_schema
 
 
-def from_function(name, func, include_return=False):
+def from_function(func: typing.Callable, include_return=False):
     """Converts a function into a schema."""
+    func_name = func.__name__
     doc = inspect.getdoc(func)
     if not doc:
-        raise ValueError(f"Missing docstring for function '{name}'")
+        raise ValueError(f"Missing docstring for function '{func_name}'")
     doc_parsed = docstring_parser.parse(doc)
     signature = inspect.signature(func)
     parameters = signature.parameters
@@ -100,7 +101,7 @@ def from_function(name, func, include_return=False):
             required_params.append(param_name)
 
     schema = {
-        "name": name,
+        "name": func_name,
         "description": doc_parsed.short_description,
         "parameters": {
             "type": "object",
@@ -135,8 +136,8 @@ def from_module(module: str | pathlib.Path | types.ModuleType, include_return=Fa
     if not isinstance(module, types.ModuleType):
         raise ValueError("Argument must be a module or the path to a module")
 
-    for name, func in inspect.getmembers(module, inspect.isfunction):
-        schema = from_function(name, func, include_return=include_return)
+    for _, func in inspect.getmembers(module, inspect.isfunction):
+        schema = from_function(func, include_return=include_return)
         schemas.append(schema)
 
     return schemas

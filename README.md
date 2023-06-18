@@ -44,10 +44,10 @@ Please update this module to add type hints to all function parameters and Googl
 ```python
 from llmfuncs import schema, validator
 
-def my_function(x: int, y: int):
-    pass
+def my_function(x: int, y: int) -> int:
+    return x + y
 
-schema = schema.from_function('my_function', my_function)
+schema = schema.from_function(my_function)
 args = {"x": 10, "y": 20}
 result = validator.call_function_with_validation(schema, my_function, args)
 ```
