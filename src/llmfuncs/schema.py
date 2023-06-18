@@ -35,9 +35,17 @@ def _python_type_to_json_schema_type(py_type):
         else:
             return [_python_type_to_json_schema_type(arg) for arg in args]
 
+    if origin is tuple or origin is typing.Tuple:
+        return {"type": "array",
+                "items": [_python_type_to_json_schema_type(arg) for arg in args]}
+
     if origin is list or origin is typing.List:
         # For simplicity, we're assuming all elements in the list are of the same type
         return {"type": "array", "items": _python_type_to_json_schema_type(args[0])}
+
+    if origin is set or origin is typing.Set:
+        return {"type": "array", "uniqueItems": True,
+                "items": _python_type_to_json_schema_type(args[0])}
 
     if origin is dict or origin is typing.Dict:
         # For simplicity, we're assuming all keys are strings
