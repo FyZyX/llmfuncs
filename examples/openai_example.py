@@ -43,7 +43,10 @@ def run_conversation():
         if function_name == "get_current_weather":
             # Call the function with the validated arguments
             function_response = validator.validate_and_call(
-                get_current_weather, function_args_json, schema["parameters"])
+                func=get_current_weather,
+                args_json=function_args_json,
+                schema=schema["parameters"],
+            )
 
             # Step 4: send the info on the function call and function response to GPT
             messages.append(
