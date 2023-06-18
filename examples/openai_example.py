@@ -23,11 +23,10 @@ def run_conversation(model="gpt-3.5-turbo-0613"):
     # Step 1: send the conversation and available functions to GPT
     messages = [{"role": "user", "content": "What's the weather like in Boston?"}]
     tools = ToolCollection(tools=[Tool(get_current_weather)])
-    functions = tools.schema()  # Use the schema generated from your function
     response = openai.ChatCompletion.create(
         model=model,
         messages=messages,
-        functions=functions,
+        functions=tools.schema(),  # Use the schema generated from your tools
         function_call="auto",  # auto is default, but we'll be explicit
     )
     response_message = response["choices"][0]["message"]
