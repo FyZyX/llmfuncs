@@ -1,6 +1,6 @@
 import types
 import unittest
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from llmfuncs.tool import Tool, ToolCollection
 
@@ -33,7 +33,7 @@ def test_function2(a: float, b: Optional[List[int]] = None) -> List[int]:
     return [int(a)] * (len(b) if b else 1)
 
 
-def test_function3(a: dict) -> dict:
+def test_function3(a: Dict) -> Dict:
     """This is a test function.
 
     Args:
@@ -68,6 +68,18 @@ def test_function5(a: dict, b: List[dict]) -> dict:
         dict: A dictionary containing the input dictionary and list.
     """
     return {"input_dict": a, "input_list": b}
+
+
+def test_function6(a: List[Dict[str, int]]) -> str:
+    """This is a test function.
+
+    Args:
+        a (List[Dict[str, int]]): A list of dictionaries. Each dictionary has str keys and int values.
+
+    Returns:
+        str: A string.
+    """
+    return "".join(str(i) for d in a for i in d.values())
 
 
 class TestTool(unittest.TestCase):
@@ -163,6 +175,35 @@ class TestToolCollection(unittest.TestCase):
                     "input_list": [{"key1": "value1"},
                                    {"key2": "value2"}]}
         self.assertEqual(result, expected)
+
+
+class TestParameterizedTypes(unittest.TestCase):
+
+    def setUp(self):
+        self.collection = ToolCollection()
+        self.collection.add_tool(Tool(test_function6))
+
+    def test_use_tool_with_list_of_dicts(self):
+        params = '{"a": [{"key1": 1, "key2": 2}, {"key1": 3, "key2": 4}]}'
+        result = self.collection.use_tool("test_function6", params)
+        self.assertEqual(result, "1234")
+
+    def test_use_tool_with_incorrect_list_of_dicts(self):
+        params = '{"a": [{"key1": "1", "key2": "2"}, {"key1": "3", "key2": "4"}]}'
+        with self.assertRaises(ValueError):
+            self.collection.use_tool("test_function6", params)
+
+    def test_schema_for_list_of_dicts(self):
+        schema_dict = {s["name"]: s for s in self.collection.schema()}
+
+        self.assertIn("test_function6", schema_dict)
+        self.assertIn("parameters", schema_dict["test_function6"])
+        self.assertIn("a", schema_dict["test_function6"]["parameters"]["properties"])
+        param_a = schema_dict["test_function6"]["parameters"]["properties"]["a"]
+        print(param_a)
+        self.assertEqual(param_a["type"], "array")
+        self.assertEqual(param_a["items"]["type"], "object")
+        self.assertEqual(param_a["items"]["additionalProperties"]["type"], "integer")
 
 
 class TestToolCollectionFromModule(unittest.TestCase):

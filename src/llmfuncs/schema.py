@@ -28,9 +28,9 @@ def json_schema_type(py_type: typing.Any) -> JsonSchema:
         return mapping[py_type]
 
     # For unparameterized list and dict types
-    if py_type is list:
+    if py_type is list or py_type is typing.List:
         return {"type": "array", "items": {}}
-    if py_type is dict:
+    if py_type is dict or py_type is typing.Dict:
         return {"type": "object", "additionalProperties": {}}
 
     origin = typing.get_origin(py_type)
@@ -47,14 +47,19 @@ def json_schema_type(py_type: typing.Any) -> JsonSchema:
 
     if origin is list or origin is typing.List:
         # For simplicity, we're assuming all elements in the list are of the same type
+        schema_type = json_schema_type(args[0])
+        if isinstance(schema_type, dict):
+            return {"type": "array", "items": schema_type}
         return {"type": "array",
                 "items": {"type": json_schema_type(args[0])}, }
 
     if origin is dict or origin is typing.Dict:
         # For simplicity, we're assuming all keys are strings
         # and all values are of the same type
-        additional_properties = json_schema_type(args[1])
-        return {"type": "object", "additionalProperties": additional_properties}
+        schema_type = json_schema_type(args[1])
+        if isinstance(schema_type, dict):
+            return {"type": "object", "additionalProperties": schema_type}
+        return {"type": "object", "additionalProperties": {"type": schema_type}}
 
     # The type is not supported
     raise ValueError(f"Cannot convert {py_type} to a JSON schema type")
