@@ -6,7 +6,7 @@ from llmfuncs.tool import Tool, ToolCollection
 
 
 # Define your function
-def get_current_weather(location, unit="fahrenheit"):
+def get_current_weather(location: str, unit: str = "fahrenheit"):
     """Get the current weather in a given location."""
     # This is a dummy function that returns the same weather every time.
     # In a real scenario, you could call a weather API here.
