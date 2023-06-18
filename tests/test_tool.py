@@ -33,12 +33,6 @@ def test_function2(a: float, b: Optional[List[int]] = None) -> List[int]:
     return [int(a)] * (len(b) if b else 1)
 
 
-# Creating a dummy module
-dummy_module = types.ModuleType("dummy_module")
-dummy_module.test_function1 = test_function1
-dummy_module.test_function2 = test_function2
-
-
 class TestTool(unittest.TestCase):
 
     def test_init_with_unsupported_parameter_type(self):
@@ -55,7 +49,17 @@ class TestTool(unittest.TestCase):
             Tool(func)
 
 
-class TestToolCollectionStuff(unittest.TestCase):
+class TestToolCollection(unittest.TestCase):
+
+    def test_tool_collection_init_empty(self):
+        collection = ToolCollection()
+        self.assertEqual(len(collection), 0)
+
+    def test_tool_collection_add_tool(self):
+        collection = ToolCollection()
+        collection.add_tool(Tool(test_function1))
+        self.assertEqual(len(collection), 1)
+        self.assertIn("test_function1", collection._tools)
 
     def test_use_tool_correct_args(self):
         def func(x: int, y: str = "hello") -> str:
@@ -89,9 +93,23 @@ class TestToolCollectionStuff(unittest.TestCase):
         with self.assertRaises(ValueError):
             tool_collection.use_tool("func", '{"x": "hello"}')
 
-    def test_tools_from_module(self):
+
+class TestToolCollectionFromModule(unittest.TestCase):
+
+    def setUp(self):
+        self.collection = ToolCollection()
+        self.collection.add_tool(Tool(test_function1))
+        self.collection.add_tool(Tool(test_function2))
+
+        # Creating a dummy module
+        dummy_module = types.ModuleType("dummy_module")
+        dummy_module.test_function1 = test_function1
+        dummy_module.test_function2 = test_function2
+        self.dummy_module = dummy_module
+
+    def test_add_tools_from_module(self):
         collection = ToolCollection()
-        collection.add_tools_from_module(dummy_module)
+        collection.add_tools_from_module(self.dummy_module)
         self.assertEqual(len(collection), 2)
 
         schema_dict = {s["name"]: s for s in collection.schema()}
@@ -111,11 +129,11 @@ class TestToolCollectionStuff(unittest.TestCase):
         self.assertIn("a", schema2["parameters"]["properties"])
         self.assertEqual(schema2["parameters"]["properties"]["a"]["type"], "number")
 
-    def test_schema_from_module_example(self):
-        collection = ToolCollection()
-        collection.add_tools_from_module(example)
-        actual_schema = collection.schema()
-        expected_schema = [
+
+class TestToolCollectionExampleModule(unittest.TestCase):
+
+    def setUp(self) -> None:
+        self.expected_schema = [
             {
                 "name": "append_file",
                 "description": "Appends content to a file.",
@@ -226,7 +244,11 @@ class TestToolCollectionStuff(unittest.TestCase):
                 },
             },
         ]
-        self.assertListEqual(actual_schema, expected_schema)
+
+    def test_schema(self):
+        collection = ToolCollection()
+        collection.add_tools_from_module(example)
+        self.assertListEqual(collection.schema(), self.expected_schema)
 
 
 if __name__ == '__main__':
