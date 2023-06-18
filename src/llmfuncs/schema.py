@@ -1,4 +1,7 @@
+import importlib
 import inspect
+import importlib.util
+import pkgutil
 import typing
 
 import docstring_parser
@@ -109,4 +112,17 @@ def from_module(module, include_return=False):
     for name, func in inspect.getmembers(module, inspect.isfunction):
         schema = from_function(name, func, include_return=include_return)
         schemas.append(schema)
+    return schemas
+
+
+def from_package(package):
+    """Extracts function information from all modules in a Python package and formats it into schemas."""
+    schemas = []
+    if isinstance(package, str):
+        package = importlib.import_module(package)
+    for importer, module_name, _ in pkgutil.walk_packages(package.__path__):
+        module_path = f'{package.__name__}.{module_name}'
+        spec = importlib.util.spec_from_file_location(module_path, importer.path)
+        module = importlib.util.module_from_spec(spec)
+        schemas.append(from_module(module))
     return schemas
