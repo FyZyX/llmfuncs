@@ -2,7 +2,7 @@ import types
 import unittest
 from typing import List, Optional
 
-from llmfuncs.tool import ToolCollection
+from llmfuncs.tool import Tool, ToolCollection
 
 import example
 
@@ -39,8 +39,57 @@ dummy_module.test_function1 = test_function1
 dummy_module.test_function2 = test_function2
 
 
-class TestSchemaExtraction(unittest.TestCase):
-    def test_schema_from_module(self):
+class TestTool(unittest.TestCase):
+
+    def test_schema_with_unsupported_parameter_type(self):
+        def func(x: complex) -> str:
+            """
+            Test function.
+
+            Args:
+                x (complex): Test variable 1
+            """
+            return str(x)
+
+        with self.assertRaises(ValueError):
+            Tool(func).schema()
+
+
+class TestToolCollectionStuff(unittest.TestCase):
+
+    def test_use_tool_correct_args(self):
+        def func(x: int, y: str = "hello") -> str:
+            """
+            Test function.
+
+            Args:
+                x (int): Test variable 1
+                y (str): Test variable 2
+            """
+            return y * x
+
+        tool_collection = ToolCollection()
+        tool_collection.add_tool(Tool(func))
+        result = tool_collection.use_tool("func", '{"x": 3}')
+        self.assertEqual(result, "hellohellohello")
+
+    def test_use_tool_incorrect_args(self):
+        def func(x: int, y: str = "hello") -> str:
+            """
+            Test function.
+
+            Args:
+                x (int): Test variable 1
+                y (str): Test variable 2
+            """
+            return y * x
+
+        tool_collection = ToolCollection()
+        tool_collection.add_tool(Tool(func))
+        with self.assertRaises(ValueError):
+            tool_collection.use_tool("func", '{"x": "hello"}')
+
+    def test_tools_from_module(self):
         collection = ToolCollection()
         collection.add_tools_from_module(dummy_module)
         self.assertEqual(len(collection), 2)
