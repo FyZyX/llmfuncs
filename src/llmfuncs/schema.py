@@ -14,7 +14,7 @@ JsonSchema = typing.Union[
 ]
 
 
-def json_schema_type(py_type):
+def json_schema_type(py_type: typing.Any) -> JsonSchema:
     mapping = {
         int: "integer",
         float: "number",

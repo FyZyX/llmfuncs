@@ -115,27 +115,25 @@ class ToolCollection:
         Given a glob pattern, find all the Python modules that match the pattern,
         and collect the schemas from all those modules.
         """
-        schemas = []
         for filename in glob.glob(pattern):
             path = pathlib.Path(filename)
             # We only want to process Python files
             if not path.suffix == ".py":
                 continue
             # Normalize the filename to an absolute path
-            module_schemas = self.add_tools_from_module(path.absolute())
-            schemas.extend(module_schemas)
-        return schemas
+            self.add_tools_from_module(path.absolute())
 
-    def use_tool(self, tool_name, json_args):
+    def use_tool(self, tool_name: str, json_args: str | typing.Mapping) -> typing.Any:
         tool = self._tools.get(tool_name)
         if not tool:
             raise ValueError(f"No tool found with name: {tool_name}")
 
         func = tool['function']
         params_schema = tool['schema']['parameters']
-        args = validator.parse_json(json_args)
+        is_string = isinstance(json_args, str)
+        args = validator.parse_json(json_args) if is_string else json_args
         validator.validate_args_with_schema(args, params_schema)
         return func(**args)
 
-    def schema(self):
+    def schema(self) -> typing.List[schema.JsonSchema]:
         return [tool.schema() for tool in self._tools.values()]
