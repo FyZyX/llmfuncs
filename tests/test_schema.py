@@ -2,7 +2,7 @@ import types
 import unittest
 from typing import List, Optional
 
-from llmfuncs.schema import from_module
+from llmfuncs.tool import ToolCollection
 
 import example
 
@@ -41,10 +41,11 @@ dummy_module.test_function2 = test_function2
 
 class TestSchemaExtraction(unittest.TestCase):
     def test_schema_from_module(self):
-        schema = from_module(dummy_module)
-        self.assertEqual(len(schema), 2)
+        collection = ToolCollection()
+        collection.add_tools_from_module(dummy_module)
+        self.assertEqual(len(collection), 2)
 
-        schema_dict = {s["name"]: s for s in schema}
+        schema_dict = {s["name"]: s for s in collection.schema()}
 
         self.assertIn("test_function1", schema_dict)
         self.assertIn("test_function2", schema_dict)
@@ -62,7 +63,9 @@ class TestSchemaExtraction(unittest.TestCase):
         self.assertEqual(schema2["parameters"]["properties"]["a"]["type"], "number")
 
     def test_schema_from_module_example(self):
-        actual_schema = from_module(example)
+        collection = ToolCollection()
+        collection.add_tools_from_module(example)
+        actual_schema = collection.schema()
         expected_schema = [
             {
                 "name": "append_file",

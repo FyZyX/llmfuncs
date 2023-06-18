@@ -63,10 +63,13 @@ class Tool:
 
 
 class ToolCollection:
-    def __init__(self, tools: typing.List[Tool]):
+    def __init__(self, tools: typing.List[Tool] = None):
         self._tools = {}
-        for tool in tools:
+        for tool in tools or []:
             self.add_tool(tool)
+
+    def __len__(self):
+        return len(self._tools)
 
     def add_tool(self, tool: Tool):
         self._tools[tool.name()] = tool
@@ -134,5 +137,5 @@ class ToolCollection:
         validator.validate_args_with_schema(args, params_schema)
         return func(**args)
 
-    def get_schema(self, tool_name):
-        return self._tools.get(tool_name, {}).get('schema')
+    def schema(self):
+        return [tool.schema() for tool in self._tools.values()]
