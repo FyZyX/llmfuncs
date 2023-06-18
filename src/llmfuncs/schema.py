@@ -1,6 +1,8 @@
+import glob
 import importlib
 import importlib.util
 import inspect
+import pathlib
 import pkgutil
 import types
 import typing
@@ -107,7 +109,7 @@ def from_function(name, func, include_return=False):
     return schema
 
 
-def from_module(module: str | types.ModuleType, include_return=False):
+def from_module(module: str | pathlib.Path | types.ModuleType, include_return=False):
     """
     Extracts function information from a Python module and formats it into a schema.
     The function can accept either a module object or a string.
@@ -132,7 +134,7 @@ def from_module(module: str | types.ModuleType, include_return=False):
     return schemas
 
 
-def from_package(package: str | types.ModuleType, include_return=False):
+def from_package(package: str | pathlib.Path | types.ModuleType, include_return=False):
     """Extracts function information from all modules in a Python package and formats it into schemas."""
     schemas = []
     if isinstance(package, str):
@@ -140,4 +142,21 @@ def from_package(package: str | types.ModuleType, include_return=False):
     for importer, module_name, _ in pkgutil.walk_packages(package.__path__):
         module_path = f'{package.__name__}.{module_name}'
         schemas.append(from_module(module_path, include_return))
+    return schemas
+
+
+def from_glob(pattern: str):
+    """
+    Given a glob pattern, find all the Python modules that match the pattern,
+    and collect the schemas from all those modules.
+    """
+    schemas = []
+    for filename in glob.glob(pattern):
+        path = pathlib.Path(filename)
+        # We only want to process Python files
+        if not path.suffix == ".py":
+            continue
+        # Normalize the filename to an absolute path
+        module_schemas = from_module(path.absolute())
+        schemas.extend(module_schemas)
     return schemas
