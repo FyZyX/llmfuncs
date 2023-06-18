@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="llmfuncs",
-    version="0.2.1",
+    version="0.2.2",
     url="https://github.com/FyZyX/llmfuncs",
     author="Lucas Lofaro",
     author_email="lucasmlofaro@gmail.com",

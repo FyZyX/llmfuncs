@@ -64,7 +64,7 @@ class Tool:
 
 class ToolCollection:
     def __init__(self, tools: typing.List[Tool] = None):
-        self._tools = {}
+        self._tools: typing.Dict[str, Tool] = {}
         for tool in tools or []:
             self.add_tool(tool)
 
@@ -128,12 +128,11 @@ class ToolCollection:
         if not tool:
             raise ValueError(f"No tool found with name: {tool_name}")
 
-        func = tool['function']
-        params_schema = tool['schema']['parameters']
+        params_schema = tool.schema()['parameters']
         is_string = isinstance(json_args, str)
         args = validator.parse_json(json_args) if is_string else json_args
         validator.validate_args_with_schema(args, params_schema)
-        return func(**args)
+        return tool(**args)
 
     def schema(self) -> typing.List[schema.JsonSchema]:
         return [tool.schema() for tool in self._tools.values()]
