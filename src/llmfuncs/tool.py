@@ -19,12 +19,26 @@ class Tool:
         doc = inspect.getdoc(func)
         if not doc:
             raise ValueError(f"Missing docstring for function '{self.name()}'")
+
         self._docstring = docstring_parser.parse(doc)
         self._signature = inspect.signature(func)
         self._type_hints = typing.get_type_hints(func)
+        self._params_schema = {}
+        self._required_params = []
+
+        self._parse_arguments()
 
     def __call__(self, *args, **kwargs):
         return self._func(*args, **kwargs)
+
+    def _parse_arguments(self):
+        for param_name, param in self._signature.parameters.items():
+            param_schema = schema.get_param_schema(
+                param_name, param, self._type_hints, self._docstring,
+            )
+            self._params_schema[param_name] = param_schema
+            if param.default is param.empty:
+                self._required_params.append(param_name)
 
     def _has_return(self):
         return self._signature.return_annotation is not self._signature.empty
@@ -33,27 +47,17 @@ class Tool:
         return self._func.__name__
 
     def schema(self):
-        params_schema = {}
-        required_params = []
-        for param_name, param in self._signature.parameters.items():
-            param_schema = schema.get_param_schema(
-                param_name, param, self._type_hints, self._docstring,
-            )
-            params_schema[param_name] = param_schema
-            if param.default is param.empty:
-                required_params.append(param_name)
-
         func_schema = {
             "name": self.name(),
             "description": self._docstring.short_description,
             "parameters": {
                 "type": "object",
-                "properties": params_schema,
+                "properties": self._params_schema,
             },
         }
 
-        if required_params:
-            func_schema["parameters"]["required"] = required_params
+        if self._required_params:
+            func_schema["parameters"]["required"] = self._required_params
 
         if self._include_return and self._has_return():
             schema_type = schema.json_schema_type(self._signature.return_annotation)

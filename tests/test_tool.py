@@ -41,7 +41,7 @@ dummy_module.test_function2 = test_function2
 
 class TestTool(unittest.TestCase):
 
-    def test_schema_with_unsupported_parameter_type(self):
+    def test_init_with_unsupported_parameter_type(self):
         def func(x: complex) -> str:
             """
             Test function.
@@ -52,7 +52,7 @@ class TestTool(unittest.TestCase):
             return str(x)
 
         with self.assertRaises(ValueError):
-            Tool(func).schema()
+            Tool(func)
 
 
 class TestToolCollectionStuff(unittest.TestCase):
