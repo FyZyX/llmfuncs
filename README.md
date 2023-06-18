@@ -41,15 +41,18 @@ Please update this module to add type hints to all function parameters and Googl
 - Converts Python types to corresponding JSON schema types
 
 ## Validating Arguments and Calling Functions
+
 ```python
 from llmfuncs import schema, validator
+
 
 def my_function(x: int, y: int) -> int:
     return x + y
 
+
 schema = schema.from_function(my_function)
 args = {"x": 10, "y": 20}
-result = validator.call_function_with_validation(schema, my_function, args)
+result = validator.validate_and_call(schema, my_function, args)
 ```
 
 ## Contributing

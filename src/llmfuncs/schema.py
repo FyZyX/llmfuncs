@@ -9,6 +9,16 @@ import typing
 
 import docstring_parser
 
+JsonSchema = typing.Union[
+    typing.Dict[str, "JSONType"],
+    typing.List["JSONType"],
+    str,
+    int,
+    float,
+    bool,
+    None,
+]
+
 
 def _python_type_to_json_schema_type(py_type):
     mapping = {
@@ -57,7 +67,12 @@ def _python_type_to_json_schema_type(py_type):
     raise ValueError(f"Cannot convert {py_type} to a JSON schema type")
 
 
-def _get_param_schema(param_name, param, type_hints, doc_parsed):
+def _get_param_schema(
+        param_name: str,
+        param: inspect.Parameter,
+        type_hints: typing.Dict[str, typing.Any],
+        doc_parsed: docstring_parser.Docstring,
+) -> JsonSchema:
     """Create a schema for a single parameter."""
     if param_name not in type_hints:
         raise ValueError(f"Missing type hint for parameter '{param_name}'")
@@ -81,7 +96,7 @@ def _get_param_schema(param_name, param, type_hints, doc_parsed):
     return param_schema
 
 
-def from_function(func: typing.Callable, include_return=False):
+def from_function(func: typing.Callable, include_return=False) -> JsonSchema:
     """Converts a function into a schema."""
     func_name = func.__name__
     doc = inspect.getdoc(func)
@@ -118,7 +133,10 @@ def from_function(func: typing.Callable, include_return=False):
     return schema
 
 
-def from_module(module: str | pathlib.Path | types.ModuleType, include_return=False):
+def from_module(
+        module: str | pathlib.Path | types.ModuleType,
+        include_return: bool = False,
+) -> JsonSchema:
     """
     Extracts function information from a Python module and formats it into a schema.
     The function can accept either a module object or a string.
@@ -143,7 +161,10 @@ def from_module(module: str | pathlib.Path | types.ModuleType, include_return=Fa
     return schemas
 
 
-def from_package(package: str | pathlib.Path | types.ModuleType, include_return=False):
+def from_package(
+        package: str | pathlib.Path | types.ModuleType,
+        include_return: bool = False,
+) -> JsonSchema:
     """Extracts function information from all modules in a Python package and formats it into schemas."""
     schemas = []
     if isinstance(package, str):
@@ -154,7 +175,7 @@ def from_package(package: str | pathlib.Path | types.ModuleType, include_return=
     return schemas
 
 
-def from_glob(pattern: str):
+def from_glob(pattern: str) -> JsonSchema:
     """
     Given a glob pattern, find all the Python modules that match the pattern,
     and collect the schemas from all those modules.
